@@ -27,24 +27,24 @@ android {
     buildTypes {
         debug {
             debuggable = true
-            applicationIdSuffix '.debug'
+            //applicationIdSuffix '.debug'
             minifyEnabled false
             buildConfigField("String", "API_KEY", '"abc123456"')
-            buildConfigField("String", "API_URL", '"example-debug.com"')
+            buildConfigField("String", "API_URL", '"https://api.coinpaprika.com/"')
         }
         tst {
             debuggable = true
-            applicationIdSuffix '.tst'
+            //applicationIdSuffix '.tst'
             minifyEnabled false
             buildConfigField("String", "API_KEY", '"abc123456"')
-            buildConfigField("String", "API_URL", '"example-test.com"')
+            buildConfigField("String", "API_URL", '"https://api.coinpaprika.com/"')
         }
         release {
             debuggable = false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField("String", "API_KEY", '"abc123456"')
-            buildConfigField("String", "API_URL", '"example-prod.com"')
+            buildConfigField("String", "API_URL", '"https://api.coinpaprika.com/"')
         }
     }
     compileOptions {
@@ -58,11 +58,10 @@ android {
 
 dependencies {
 
-    implementation libs.glide
-    implementation libs.retrofit
     implementation libs.converter.gson
-    implementation libs.okhttp
+    implementation libs.gson
     implementation libs.hilt.android
+    implementation libs.androidx.swiperefreshlayout
     kapt libs.hilt.compiler
     implementation libs.core.ktx
     implementation libs.appcompat
@@ -70,6 +69,8 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation ('com.github.ybq:Android-SpinKit:1.4.0')
+    implementation ('com.github.TutorialsAndroid:GButton:v1.0.19')
 }
 
 kapt {
