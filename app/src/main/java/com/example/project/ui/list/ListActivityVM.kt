@@ -12,8 +12,6 @@ import android.widget.EditText
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.project.domain.coin.CoinListUseCase
-import com.example.project.repository.satelliteService.reqres.Coin
 import com.example.project.ui.adapter.SatelliteListAdapter
 import com.example.project.util.CustomItemAnimator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,18 +22,18 @@ import javax.inject.Inject
 
 @SuppressLint("NotifyDataSetChanged")
 @HiltViewModel
-class ListActivityVM @Inject constructor(private val coinListUseCase: CoinListUseCase) :
+class ListActivityVM @Inject constructor() :
     ViewModel() {
 
     private lateinit var satelliteListAdapter: SatelliteListAdapter
-    private var coinList: ArrayList<Coin> = ArrayList()
-    private var tempCoinList: ArrayList<Coin> = ArrayList()
-    private var favCoinList: ArrayList<Coin> = ArrayList()
+   // private var coinList: ArrayList<Coin> = ArrayList()
+    //private var tempCoinList: ArrayList<Coin> = ArrayList()
+    //private var favCoinList: ArrayList<Coin> = ArrayList()
 
     var loadingFlag = false
 
     suspend fun coinListFun(recyclerView: RecyclerView, activity: Activity) {
-        coinListUseCase.invoke(
+       /* coinListUseCase.invoke(
             parameter = null
         ).onStart {
             Log.i("TAG", "coinListFun: onStart")
@@ -54,11 +52,11 @@ class ListActivityVM @Inject constructor(private val coinListUseCase: CoinListUs
             (it.body() as ArrayList<Coin>?)?.let { it1 -> tempCoinList.addAll(it1) }
             Log.i("TAG", "$coinList")
             setList(recyclerView, activity)
-        }
+        }*/
     }
 
     private fun setList(recyclerView: RecyclerView, activity: Activity) {
-        activity.runOnUiThread {
+        /*activity.runOnUiThread {
             satelliteListAdapter = SatelliteListAdapter(tempCoinList, activity)
             recyclerView.layoutManager = LinearLayoutManager(activity);
             recyclerView.post {
@@ -66,7 +64,7 @@ class ListActivityVM @Inject constructor(private val coinListUseCase: CoinListUs
                 recyclerView.itemAnimator = CustomItemAnimator()
             }
 
-        }
+        }*/
     }
 
     private fun hideSoftKeyboard(activity: Activity) {
@@ -119,12 +117,12 @@ class ListActivityVM @Inject constructor(private val coinListUseCase: CoinListUs
     @SuppressLint("NotifyDataSetChanged")
     private fun searchItems(query: String) {
 
-        tempCoinList.clear()
+       /* tempCoinList.clear()
 
         tempCoinList.addAll(coinList.filter {
             it.name?.lowercase(Locale.ROOT)?.contains(query) ?: false
         })
-
+*/
 
         satelliteListAdapter.notifyDataSetChanged()
 

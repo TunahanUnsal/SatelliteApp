@@ -1,22 +1,25 @@
 package com.example.project.repository.satelliteService
 
+
 import android.content.Context
+import com.example.project.repository.satelliteService.model.PositionModel
+import com.example.project.repository.satelliteService.model.SatelliteDetailModel
 import com.example.project.repository.satelliteService.model.SatelliteModel
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
-class SatelliteRepository @Inject constructor(@ApplicationContext private val context: Context) {
+class SatelliteDetailRepository(private val context: Context) {
 
-    fun getMyDataFromAsset(): List<SatelliteModel>? {
+    fun getMyDataFromAsset(): List<SatelliteDetailModel>? {
         val json = try {
-            val inputStream = context.assets.open("satellites.json")
+            val inputStream = context.assets.open("satellite_detail.json")
             val size = inputStream.available()
             val buffer = ByteArray(size)
             inputStream.read(buffer)
             inputStream.close()
             val jsonString = String(buffer, Charsets.UTF_8)
-            Gson().fromJson(jsonString, Array<SatelliteModel>::class.java).toList()
+            Gson().fromJson(jsonString, Array<SatelliteDetailModel>::class.java).toList()
         } catch (e: Exception) {
             e.printStackTrace()
             null

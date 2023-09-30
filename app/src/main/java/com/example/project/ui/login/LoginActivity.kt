@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.project.ExampleApplication
 import com.example.project.R
 import com.example.project.databinding.ActivityLoginBinding
 import com.example.project.ui.home.HomeActivity
@@ -28,6 +29,7 @@ class LoginActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[LoginActivityVM::class.java]
         setContentView(binding.root)
 
+        viewModel.test()
 
         Handler(Looper.getMainLooper()).postDelayed(
             {
