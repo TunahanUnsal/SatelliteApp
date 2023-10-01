@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -18,12 +19,10 @@ import com.example.project.domain.satellite.SatelliteUseCase
 import com.example.project.repository.satelliteService.model.SatelliteModel
 import com.example.project.ui.adapter.SatelliteListAdapter
 import com.example.project.util.CustomItemAnimator
+import com.example.project.util.UiUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onStart
 import java.util.Locale
 import javax.inject.Inject
 
@@ -35,28 +34,32 @@ class ListActivityVM @Inject constructor(
     ViewModel() {
 
     private lateinit var satelliteListAdapter: SatelliteListAdapter
-    private lateinit var satelliteList: ArrayList<SatelliteModel>
+    private val satelliteList: ArrayList<SatelliteModel> by lazy { ArrayList() }
     private var tempSatelliteList: ArrayList<SatelliteModel> = ArrayList()
+
 
     private val searchDelayMillis: Long = 300
     private val handler = Handler(Looper.getMainLooper())
 
 
-    fun getData(activity: Activity, swipeRefreshLayout: SwipeRefreshLayout) {
-
-        swipeRefreshLayout.isRefreshing = true
-
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(2000)
-            val result = satelliteUseCase.execute() as ArrayList<SatelliteModel>
-
-            withContext(Dispatchers.Main) {
-                satelliteList = result
-                tempSatelliteList = result
-                satelliteListAdapter.updateData(tempSatelliteList)
-                swipeRefreshLayout.isRefreshing = false
-            }
+    suspend fun getList(activity: Activity, swipeRefreshLayout: SwipeRefreshLayout) {
+        satelliteUseCase.execute().onStart {
+            Log.i("TAG", "getList: onStart")
+            swipeRefreshLayout.isRefreshing = true
+        }.catch {
+            swipeRefreshLayout.isRefreshing = false
+            UiUtil.customAlertDialog(
+                activity,
+                it.message.toString()
+            )
+        }.collect {
+            satelliteList.clear()
+            satelliteList.addAll(it)
+            tempSatelliteList = it as ArrayList<SatelliteModel>
+            satelliteListAdapter.updateData(tempSatelliteList)
+            swipeRefreshLayout.isRefreshing = false
         }
+
     }
 
     private fun hideSoftKeyboard(activity: Activity) {
@@ -101,7 +104,7 @@ class ListActivityVM @Inject constructor(
                 handler.removeCallbacksAndMessages(null)
                 handler.postDelayed({
                     val searchText = s.toString().trim().lowercase(Locale.ROOT)
-                    searchItems(searchText,swipeRefreshLayout)
+                    searchItems(searchText, swipeRefreshLayout)
                 }, searchDelayMillis)
 
             }
@@ -130,11 +133,8 @@ class ListActivityVM @Inject constructor(
 
         tempSatelliteList.clear()
         tempSatelliteList.addAll(filteredList)
-
-        satelliteListAdapter.notifyDataSetChanged()
-
+        satelliteListAdapter.updateData(tempSatelliteList)
         swipeRefreshLayout.isRefreshing = false
 
     }
-
 }

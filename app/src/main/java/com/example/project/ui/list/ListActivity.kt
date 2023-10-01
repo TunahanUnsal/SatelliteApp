@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.project.databinding.ActivityListBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ListActivity : AppCompatActivity() {
@@ -22,12 +25,14 @@ class ListActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[ListActivityVM::class.java]
         setContentView(binding.root)
 
-        viewModel.setList(binding.satelliteListView,this@ListActivity)
+        viewModel.setList(binding.satelliteListView, this@ListActivity)
         viewModel.setupUI(binding.viewGeneral, this@ListActivity)
-        viewModel.search(binding.searchEditText,binding.swipeRefresh)
+        viewModel.search(binding.searchEditText, binding.swipeRefresh)
 
 
-        viewModel.getData(this@ListActivity,binding.swipeRefresh)
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.getList(this@ListActivity, binding.swipeRefresh)
+        }
 
         binding.swipeRefresh.setOnRefreshListener {
             binding.searchEditText.text.clear()
