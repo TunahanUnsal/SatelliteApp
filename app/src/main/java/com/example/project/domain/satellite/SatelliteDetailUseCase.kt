@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class SatelliteDetailUseCase @Inject constructor(private val repository: SatelliteDetailRepository) {
 
-    fun execute(): Flow<List<SatelliteDetailModel>> {
-        return repository.getMyDataFromAsset()
+    fun execute(id: Int): Flow<SatelliteDetailModel?> {
+        return repository.getSatelliteDetailById(id)
     }
 }

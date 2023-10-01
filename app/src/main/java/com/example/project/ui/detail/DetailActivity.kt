@@ -2,6 +2,7 @@ package com.example.project.ui.detail
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.project.databinding.ActivityDetailBinding
@@ -14,6 +15,10 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var viewModel: DetailActivityVM
     private lateinit var id: String
     private lateinit var name: String
+    private val updateIntervalMillis = 3000L
+    private var currentPositionIndex = 0
+
+    private val handler = Handler()
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,33 +34,47 @@ class DetailActivity : AppCompatActivity() {
         binding.name.text = name
 
         binding.swipeRefresh.setOnRefreshListener {
-            binding.swipeRefresh.isRefreshing = true
-            viewModel.getDetail(this@DetailActivity)
+            binding.swipeRefresh.isRefreshing = false
+            //viewModel.getDetail(this@DetailActivity, id.toInt())
         }
 
-        viewModel.getDetail(this@DetailActivity)
-        viewModel.getPosition(this@DetailActivity)
+        binding.back.setOnClickListener {
+            finish()
+        }
+
+        viewModel.getDetail(this@DetailActivity, id.toInt())
 
         viewModel.satelliteDetailFlow.observe(this) { data ->
-            val model = data.find { it.id.toString() == id }
-            binding.cost.text = model?.costPerLaunch.toString()
-            binding.date.text = model?.firstFlight
-            binding.height.text = model?.height.toString()
+            binding.cost.text = data?.costPerLaunch.toString()
+            binding.date.text = data?.firstFlight
+            binding.height.text = data?.height.toString()
             binding.swipeRefresh.isRefreshing = false
         }
 
+        viewModel.getPosition(this@DetailActivity, id)
+        updatePosition()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updatePosition() {
         viewModel.positionFlow.observe(this) { data ->
-            if (data != null) {
-                viewModel.positionList = data.list
-                val listPosition = viewModel.positionList.find { it.id == id }
-
-                if (listPosition != null) {
-                    binding.lastPosition.text =
-                        "(" + listPosition.positions.last().posX.toString() + "-" + listPosition.positions.last().posY.toString() + ")"
-
+            if (data != null && currentPositionIndex < data.positions.size) {
+                val currentPosition = data.positions[currentPositionIndex]
+                binding.lastPosition.text =
+                    "(" + currentPosition.posX.toString() + "-" + currentPosition.posY.toString() + ")"
+                currentPositionIndex++
+                if (currentPositionIndex >= data.positions.size) {
+                    currentPositionIndex = 0
                 }
+                handler.postDelayed({
+                    updatePosition()
+                }, updateIntervalMillis)
             }
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
+    }
 }

@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class SatelliteDetailRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
-    fun getMyDataFromAsset(): Flow<List<SatelliteDetailModel>> {
+    fun getSatelliteDetailById(id: Int): Flow<SatelliteDetailModel?> {
         return flow {
             try {
                 val inputStream = context.assets.open("satellite_detail.json")
@@ -23,10 +23,13 @@ class SatelliteDetailRepository @Inject constructor(@ApplicationContext private 
                 val jsonString = String(buffer, Charsets.UTF_8)
                 val data =
                     Gson().fromJson(jsonString, Array<SatelliteDetailModel>::class.java).toList()
-                emit(data)
+
+                val detail = data.firstOrNull { it.id == id }
+
+                emit(detail)
             } catch (e: Exception) {
                 e.printStackTrace()
-                emit(emptyList())
+                emit(null)
             }
         }.flowOn(Dispatchers.IO)
     }

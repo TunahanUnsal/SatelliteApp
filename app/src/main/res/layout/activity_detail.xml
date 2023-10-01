@@ -33,6 +33,17 @@
                 app:layout_constraintGuide_percent="0.85" />
 
             <ImageView
+                android:id="@+id/back"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="@dimen/margin_top"
+                android:layout_marginTop="@dimen/margin_top"
+                android:contentDescription="@android:string/ok"
+                android:src="@drawable/back"
+                app:layout_constraintEnd_toStartOf="@+id/guideline"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
