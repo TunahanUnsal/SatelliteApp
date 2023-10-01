@@ -1,21 +1,21 @@
 package com.example.project.ui.detail
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.project.databinding.ActivityDetailBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private lateinit var viewModel: DetailActivityVM
+    private lateinit var id: String
+    private lateinit var name: String
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -23,47 +23,36 @@ class DetailActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[DetailActivityVM::class.java]
         setContentView(binding.root)
 
-        val name: String = intent.getStringExtra("name").toString()
-        val id: String = intent.getStringExtra("id").toString()
-        val type: String = intent.getStringExtra("type").toString()
-        val rank: String = intent.getStringExtra("rank").toString()
-        val symbol: String = intent.getStringExtra("symbol").toString()
+        id = intent.getStringExtra("id").toString()
+        name = intent.getStringExtra("name").toString()
 
-
-        CoroutineScope(Dispatchers.IO).launch {
-            viewModel.loadingFlag = true
-            val response = async {
-                viewModel.coinDetailFun(
-                    this@DetailActivity,
-                    applicationContext,
-                    id,
-                    binding.swipeRefresh
-                )
-            }
-            response.await()
-            runOnUiThread {
-                binding.swipeRefresh.isRefreshing = false
-            }
-            viewModel.loadingFlag = false
-        }
+        binding.name.text = name
 
         binding.swipeRefresh.setOnRefreshListener {
-            if (!viewModel.loadingFlag) {
-                viewModel.loadingFlag = true
-                CoroutineScope(Dispatchers.IO).launch {
-                    val response = async {
-                        viewModel.coinDetailFun(
-                            this@DetailActivity,
-                            applicationContext,
-                            id,
-                            binding.swipeRefresh
-                        )
-                    }
-                    response.await()
-                    runOnUiThread {
-                        binding.swipeRefresh.isRefreshing = false
-                    }
-                    viewModel.loadingFlag = false
+            binding.swipeRefresh.isRefreshing = true
+            viewModel.getDetail(this@DetailActivity)
+        }
+
+        viewModel.getDetail(this@DetailActivity)
+        viewModel.getPosition(this@DetailActivity)
+
+        viewModel.satelliteDetailFlow.observe(this) { data ->
+            val model = data.find { it.id.toString() == id }
+            binding.cost.text = model?.costPerLaunch.toString()
+            binding.date.text = model?.firstFlight
+            binding.height.text = model?.height.toString()
+            binding.swipeRefresh.isRefreshing = false
+        }
+
+        viewModel.positionFlow.observe(this) { data ->
+            if (data != null) {
+                viewModel.positionList = data.list
+                val listPosition = viewModel.positionList.find { it.id == id }
+
+                if (listPosition != null) {
+                    binding.lastPosition.text =
+                        "(" + listPosition.positions.last().posX.toString() + "-" + listPosition.positions.last().posY.toString() + ")"
+
                 }
             }
         }

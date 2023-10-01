@@ -4,67 +4,41 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.project.domain.satellite.SatelliteUseCase
+import com.example.project.repository.satelliteService.model.SatelliteModel
 import com.example.project.ui.adapter.SatelliteListAdapter
 import com.example.project.util.CustomItemAnimator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 
 @SuppressLint("NotifyDataSetChanged")
 @HiltViewModel
-class ListActivityVM @Inject constructor() :
+class ListActivityVM @Inject constructor(
+    private val satelliteUseCase: SatelliteUseCase,
+) :
     ViewModel() {
 
-    private lateinit var satelliteListAdapter: SatelliteListAdapter
-   // private var coinList: ArrayList<Coin> = ArrayList()
-    //private var tempCoinList: ArrayList<Coin> = ArrayList()
-    //private var favCoinList: ArrayList<Coin> = ArrayList()
+    lateinit var satelliteListAdapter: SatelliteListAdapter
+    lateinit var satelliteList: ArrayList<SatelliteModel>
+    var tempSatelliteList: ArrayList<SatelliteModel> = ArrayList()
 
-    var loadingFlag = false
 
-    suspend fun coinListFun(recyclerView: RecyclerView, activity: Activity) {
-       /* coinListUseCase.invoke(
-            parameter = null
-        ).onStart {
-            Log.i("TAG", "coinListFun: onStart")
-            loadingFlag = true
-        }.catch {
-            Log.i("TAG", "coinListFun: catch $it")
-            loadingFlag = false
-        }.collect {
-            loadingFlag = false
-            Log.i("TAG", "coinListFun: collect ${it.body()}")
-            val list: ArrayList<Coin>? = it.body() as ArrayList<Coin>?
-            Log.i("TAG", "coinListFun: ${list?.get(0)?.id}")
-            coinList.clear()
-            tempCoinList.clear()
-            (it.body() as ArrayList<Coin>?)?.let { it1 -> coinList.addAll(it1) }
-            (it.body() as ArrayList<Coin>?)?.let { it1 -> tempCoinList.addAll(it1) }
-            Log.i("TAG", "$coinList")
-            setList(recyclerView, activity)
-        }*/
-    }
-
-    private fun setList(recyclerView: RecyclerView, activity: Activity) {
-        /*activity.runOnUiThread {
-            satelliteListAdapter = SatelliteListAdapter(tempCoinList, activity)
-            recyclerView.layoutManager = LinearLayoutManager(activity);
-            recyclerView.post {
-                recyclerView.adapter = satelliteListAdapter
-                recyclerView.itemAnimator = CustomItemAnimator()
-            }
-
-        }*/
+    fun getData(activity: Activity) {
+        viewModelScope.launch {
+            satelliteList = satelliteUseCase.execute() as ArrayList<SatelliteModel>
+            tempSatelliteList = satelliteUseCase.execute() as ArrayList<SatelliteModel>
+        }
+        satelliteListAdapter = SatelliteListAdapter(tempSatelliteList, activity)
     }
 
     private fun hideSoftKeyboard(activity: Activity) {
@@ -107,22 +81,32 @@ class ListActivityVM @Inject constructor() :
 
             override fun afterTextChanged(s: Editable?) {
                 val searchText = s.toString().trim().lowercase(Locale.ROOT)
-                if (!loadingFlag) {
-                    searchItems(searchText)
-                }
+                searchItems(searchText)
+
             }
         })
+    }
+
+    fun setList(recyclerView: RecyclerView, activity: Activity) {
+        activity.runOnUiThread {
+            satelliteListAdapter = SatelliteListAdapter(tempSatelliteList, activity)
+            recyclerView.layoutManager = LinearLayoutManager(activity);
+            recyclerView.post {
+                recyclerView.adapter = satelliteListAdapter
+                recyclerView.itemAnimator = CustomItemAnimator()
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun searchItems(query: String) {
 
-       /* tempCoinList.clear()
-
-        tempCoinList.addAll(coinList.filter {
+        val filteredList = satelliteList.filter {
             it.name?.lowercase(Locale.ROOT)?.contains(query) ?: false
-        })
-*/
+        }
+
+        tempSatelliteList.clear()
+        tempSatelliteList.addAll(filteredList)
 
         satelliteListAdapter.notifyDataSetChanged()
 

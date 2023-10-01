@@ -14,9 +14,11 @@
         android:layout_marginEnd="@dimen/margin_start_edittext"
         android:autofillHints=""
         android:background="@drawable/edit_text_background"
-        android:drawableStart="@drawable/baseline_search_24"
+        android:drawableStart="@drawable/target_24"
+        android:drawableEnd="@drawable/target_24"
         android:hint="@string/search_hint"
         android:inputType="text"
+        android:textAlignment="center"
         android:padding="@dimen/text_small"
         android:textColor="@color/blue"
         android:textColorHint="@color/blue"
@@ -35,7 +37,7 @@
         app:layout_constraintTop_toBottomOf="@+id/search_edit_text">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/coin_list_view"
+            android:id="@+id/satellite_list_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="@dimen/margin_top"

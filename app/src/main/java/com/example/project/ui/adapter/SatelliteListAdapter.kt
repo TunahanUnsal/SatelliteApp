@@ -8,26 +8,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
 import com.example.project.repository.satelliteService.model.SatelliteModel
 import com.example.project.ui.detail.DetailActivity
 
 
-class SatelliteListAdapter(private val coinList: ArrayList<SatelliteModel>, private val activity: Activity) :
+class SatelliteListAdapter(
+    private val coinList: ArrayList<SatelliteModel>,
+    private val activity: Activity
+) :
     RecyclerView.Adapter<SatelliteListAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.list_item_satellite, parent, false)
+        val v =
+            LayoutInflater.from(parent.context).inflate(R.layout.list_item_satellite, parent, false)
         return ViewHolder(v)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bindItems(coinList[position], activity)
-        holder.itemView.findViewById<ConstraintLayout>(R.id.view_general).startAnimation(
+        holder.itemView.findViewById<CardView>(R.id.view_general).startAnimation(
             AnimationUtils.loadAnimation(
                 holder.itemView.context,
                 R.anim.item_animation_fall_down
@@ -42,29 +47,30 @@ class SatelliteListAdapter(private val coinList: ArrayList<SatelliteModel>, priv
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         @SuppressLint("SetTextI18n")
-        fun bindItems(coin: SatelliteModel, activity: Activity) {
+        fun bindItems(satellite: SatelliteModel, activity: Activity) {
 
-            Log.i("TAG", "bindItems: $coin")
+            Log.i("TAG", "bindItems: $satellite")
 
-            val rankTextView = itemView.findViewById<TextView>(R.id.rank)
-            val symbolTextView = itemView.findViewById<TextView>(R.id.symbol)
             val nameTextView = itemView.findViewById<TextView>(R.id.name)
-            val typeTextView = itemView.findViewById<TextView>(R.id.type)
+            val stateTextView = itemView.findViewById<TextView>(R.id.state)
+            val image = itemView.findViewById<ImageView>(R.id.image)
 
-            /*rankTextView.text = "#" + coin.rank.toString()
-            symbolTextView.text = coin.symbol.toString()
-            nameTextView.text = coin.name.toString()
-            typeTextView.text = coin.type.toString()
+            nameTextView.text = satellite.name.toString()
+
+            if (satellite.active == true) {
+                stateTextView.text = "active"
+                image.setImageResource(R.drawable.rocket_active)
+            } else {
+                stateTextView.text = "passive"
+                image.setImageResource(R.drawable.rocket_passive)
+            }
 
             itemView.setOnClickListener {
                 val intent = Intent(activity, DetailActivity::class.java).setAction("")
-                intent.putExtra("id", coin.id)
-                intent.putExtra("name", coin.name)
-                intent.putExtra("type", coin.type)
-                intent.putExtra("rank", coin.rank.toString())
-                intent.putExtra("symbol", coin.symbol)
+                intent.putExtra("id", satellite.id.toString())
+                intent.putExtra("name", satellite.name.toString())
                 activity.startActivity(intent)
-            }*/
+            }
 
 
         }

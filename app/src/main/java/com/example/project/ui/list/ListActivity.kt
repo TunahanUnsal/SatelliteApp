@@ -1,14 +1,11 @@
 package com.example.project.ui.list
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.project.databinding.ActivityListBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ListActivity : AppCompatActivity() {
@@ -16,35 +13,27 @@ class ListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityListBinding
     private lateinit var viewModel: ListActivityVM
 
+
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         binding = ActivityListBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this)[ListActivityVM::class.java]
         setContentView(binding.root)
 
+        viewModel.setList(binding.satelliteListView,this@ListActivity)
         viewModel.setupUI(binding.viewGeneral, this@ListActivity)
-
         viewModel.search(binding.searchEditText)
 
+        viewModel.getData(this)
+
+
+
         binding.swipeRefresh.setOnRefreshListener {
-            if (!viewModel.loadingFlag) {
-                viewModel.loadingFlag = true
-                binding.searchEditText.text.clear()
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    val response = async {
-                        viewModel.coinListFun(binding.coinListView, this@ListActivity)
-                    }
-                    response.await()
-                    runOnUiThread {
-                        binding.swipeRefresh.isRefreshing = false
-                    }
-                    viewModel.loadingFlag = false
-                }
-
-            }
+            binding.searchEditText.text.clear()
+            viewModel.getData(this)
         }
+
     }
 }

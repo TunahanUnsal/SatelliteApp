@@ -54,6 +54,9 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    kapt {
+        generateStubs = true
+    }
 }
 
 dependencies {
@@ -71,6 +74,9 @@ dependencies {
     androidTestImplementation libs.espresso.core
     implementation ('com.github.ybq:Android-SpinKit:1.4.0')
     implementation ('com.github.TutorialsAndroid:GButton:v1.0.19')
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
+
 }
 
 kapt {

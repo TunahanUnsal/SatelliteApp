@@ -9,9 +9,10 @@ import javax.inject.Inject
 private const val TAG: String = "LoginActivityVM"
 
 @HiltViewModel
-class LoginActivityVM @Inject constructor(private val satelliteUseCase: SatelliteUseCase) : ViewModel() {
+class LoginActivityVM @Inject constructor(private val satelliteUseCase: SatelliteUseCase) :
+    ViewModel() {
 
-    fun test(){
+    fun test() {
         Log.i(TAG, "test: ${satelliteUseCase.execute()}")
     }
 
