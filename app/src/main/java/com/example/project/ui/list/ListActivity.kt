@@ -24,15 +24,15 @@ class ListActivity : AppCompatActivity() {
 
         viewModel.setList(binding.satelliteListView,this@ListActivity)
         viewModel.setupUI(binding.viewGeneral, this@ListActivity)
-        viewModel.search(binding.searchEditText)
-
-        viewModel.getData(this)
+        viewModel.search(binding.searchEditText,binding.swipeRefresh)
 
 
+        viewModel.getData(this@ListActivity,binding.swipeRefresh)
 
         binding.swipeRefresh.setOnRefreshListener {
             binding.searchEditText.text.clear()
-            viewModel.getData(this)
+            binding.swipeRefresh.isRefreshing = false
+            //viewModel.getData(this,binding.swipeRefresh)
         }
 
     }

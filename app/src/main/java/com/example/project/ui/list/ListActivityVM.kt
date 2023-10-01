@@ -2,6 +2,8 @@ package com.example.project.ui.list
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -9,15 +11,19 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.project.domain.satellite.SatelliteUseCase
 import com.example.project.repository.satelliteService.model.SatelliteModel
 import com.example.project.ui.adapter.SatelliteListAdapter
 import com.example.project.util.CustomItemAnimator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
 
@@ -28,17 +34,29 @@ class ListActivityVM @Inject constructor(
 ) :
     ViewModel() {
 
-    lateinit var satelliteListAdapter: SatelliteListAdapter
-    lateinit var satelliteList: ArrayList<SatelliteModel>
-    var tempSatelliteList: ArrayList<SatelliteModel> = ArrayList()
+    private lateinit var satelliteListAdapter: SatelliteListAdapter
+    private lateinit var satelliteList: ArrayList<SatelliteModel>
+    private var tempSatelliteList: ArrayList<SatelliteModel> = ArrayList()
+
+    private val searchDelayMillis: Long = 300
+    private val handler = Handler(Looper.getMainLooper())
 
 
-    fun getData(activity: Activity) {
-        viewModelScope.launch {
-            satelliteList = satelliteUseCase.execute() as ArrayList<SatelliteModel>
-            tempSatelliteList = satelliteUseCase.execute() as ArrayList<SatelliteModel>
+    fun getData(activity: Activity, swipeRefreshLayout: SwipeRefreshLayout) {
+
+        swipeRefreshLayout.isRefreshing = true
+
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(2000)
+            val result = satelliteUseCase.execute() as ArrayList<SatelliteModel>
+
+            withContext(Dispatchers.Main) {
+                satelliteList = result
+                tempSatelliteList = result
+                satelliteListAdapter.updateData(tempSatelliteList)
+                swipeRefreshLayout.isRefreshing = false
+            }
         }
-        satelliteListAdapter = SatelliteListAdapter(tempSatelliteList, activity)
     }
 
     private fun hideSoftKeyboard(activity: Activity) {
@@ -71,7 +89,7 @@ class ListActivityVM @Inject constructor(
         }
     }
 
-    fun search(editText: EditText) {
+    fun search(editText: EditText, swipeRefreshLayout: SwipeRefreshLayout) {
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
@@ -80,8 +98,11 @@ class ListActivityVM @Inject constructor(
             }
 
             override fun afterTextChanged(s: Editable?) {
-                val searchText = s.toString().trim().lowercase(Locale.ROOT)
-                searchItems(searchText)
+                handler.removeCallbacksAndMessages(null)
+                handler.postDelayed({
+                    val searchText = s.toString().trim().lowercase(Locale.ROOT)
+                    searchItems(searchText,swipeRefreshLayout)
+                }, searchDelayMillis)
 
             }
         })
@@ -99,7 +120,9 @@ class ListActivityVM @Inject constructor(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun searchItems(query: String) {
+    private fun searchItems(query: String, swipeRefreshLayout: SwipeRefreshLayout) {
+
+        swipeRefreshLayout.isRefreshing = true
 
         val filteredList = satelliteList.filter {
             it.name?.lowercase(Locale.ROOT)?.contains(query) ?: false
@@ -109,6 +132,8 @@ class ListActivityVM @Inject constructor(
         tempSatelliteList.addAll(filteredList)
 
         satelliteListAdapter.notifyDataSetChanged()
+
+        swipeRefreshLayout.isRefreshing = false
 
     }
 

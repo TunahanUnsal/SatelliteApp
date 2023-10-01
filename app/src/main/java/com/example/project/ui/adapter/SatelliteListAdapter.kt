@@ -40,6 +40,13 @@ class SatelliteListAdapter(
         )
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateData(newData: ArrayList<SatelliteModel>) {
+        coinList.clear()
+        coinList.addAll(newData)
+        notifyDataSetChanged()
+    }
+
     override fun getItemCount(): Int {
         return coinList.size
     }
